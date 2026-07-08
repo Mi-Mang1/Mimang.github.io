@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的 - 个人导航站</title>
+    <style>
+        /* ============================================================
+                   CSS 变量（支持深色/浅色模式）
+                   ============================================================ */
+        :root {
+            --bg-overlay: rgba(0, 0, 0, 0.35);
+            --card-bg: rgba(255, 255, 255, 0.06);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover-bg: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-more-muted: rgba(255, 255, 255, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --tag-bg: rgba(74, 144, 226, 0.2);
+            --tag-color: #8bb8ff;
+            --timeline-line: rgba(255, 255, 255, 0.1);
+            --modal-bg: #1e1e2f;
+            --modal-border: rgba(255, 255, 255, 0.12);
+            --btn-hover-bg: rgba(255, 255, 255, 0.15);
+            --transition-speed: 0.4s;
+        }
+
+        [data-theme="dark"] {
+            --bg-overlay: rgba(0, 0, 0, 0.6);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-hover-bg: rgba(255, 255, 255, 0.08);
+            --text-primary: #e8eeff;
+            --text-secondary: rgba(255, 255, 255, 0.55);
+            --text-muted: rgba(255, 255, 255, 0.3);
+            --text-more-muted: rgba(255, 255, 255, 0.15);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --input-border: rgba(255, 255, 255, 0.06);
+            --tag-bg: rgba(74, 144, 226, 0.15);
+            --tag-color: #7ab8ff;
+            --timeline-line: rgba(255, 255, 255, 0.06);
+            --modal-bg: #14141f;
+            --modal-border: rgba(255, 255, 255, 0.06);
+            --btn-hover-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ============================================================
+                   全局样式
+                   ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-primary);
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.4s ease;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-overlay);
+            z-index: -1;
+            transition: background 0.5s ease;
+        }
+
+        .page-content {
+            display: block;
+            padding: 80px 0 30px;
+            max-width: 60%;
+            margin: auto;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        /* ============================================================
+                   1. 个人资料卡（头像可点击）
+                   ============================================================ */
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .profile-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .profile-avatar-wrapper:hover .avatar-edit-hint {
+            opacity: 1;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a90e2, #8bb8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.3);
+            user-select: none;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: transform 0.3s, opacity 0.3s;
+            object-fit: cover;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .profile-avatar-wrapper:hover .profile-avatar {
+            opacity: 0.8;
+            transform: scale(1.04);
+        }
+
+        .avatar-edit-hint {
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 12px;
+            border-radius: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 180px;
+        }
+        .profile-info .greeting {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+        .profile-info .username {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .profile-info .username input {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 4px 14px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            outline: none;
+            width: 200px;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+        .profile-info .username input:focus {
+            border-color: #4a90e2;
+            background: rgba(74, 144, 226, 0.1);
+        }
+        .profile-info .username .hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .profile-info .bio {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .profile-info .bio span {
+            background: var(--card-bg);
+            padding: 2px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            border: 1px solid var(--card-border);
+        }
+
+        /* ============================================================
+                   2. 头像修改弹窗
+                   ============================================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--modal-bg);
+            padding: 28px 32px;
+            border-radius: 14px;
+            width: 420px;
+            max-width: 94%;
+            border: 1px solid var(--modal-border);
+            color: var(--text-primary);
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .modal-box h3 {
+            margin-bottom: 16px;
+            font-size: 19px;
+            font-weight: 600;
+            color: #c8d8ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-box .modal-avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4a90e2, #8bb8ff);
+            font-size: 40px;
+            font-weight: 700;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            object-fit: cover;
+            overflow: hidden;
+        }
+        .modal-box .modal-avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .modal-box .modal-avatar-preview .fallback-text {
+            font-size: 40px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .modal-box input[type="text"],
+        .modal-box input[type="file"] {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .modal-box input[type="text"]:focus {
+            border-color: #4a90e2;
+        }
+        .modal-box input[type="file"] {
+            padding: 8px 10px;
+            background: var(--input-bg);
+            cursor: pointer;
+        }
+        .modal-box input[type="file"]::-webkit-file-upload-button {
+            background: rgba(74, 144, 226, 0.3);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 16px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .modal-box .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 14px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .modal-box .divider::before,
+        .modal-box .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--card-border);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-cancel {
+            background: #3a3a4e;
+            color: #ccc;
+        }
+        .btn-cancel:hover {
+            background: #4a4a5e;
+        }
+        .btn-save {
+            background: #4a90e2;
+            color: #fff;
+        }
+        .btn-save:hover {
+            background: #5a9ef0;
+            transform: scale(1.02);
+        }
+        .btn-danger {
+            background: #e53e3e;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #f54e4e;
+        }
+
+        /* ============================================================
+                   3. 统计卡片
+                   ============================================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            padding: 16px 18px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            background: var(--card-hover-bg);
+            transform: translateY(-3px);
+            border-color: rgba(74, 144, 226, 0.25);
+        }
+        .stat-card .stat-number {
+            font-size: 30px;
+            font-weight: 700;
+            color: #8bb8ff;
+            line-height: 1.2;
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .stat-card .stat-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* ============================================================
+                   4. 设置区域（两列网格）
+                   ============================================================ */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .setting-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            padding: 18px 22px;
+            border: 1px solid var(--card-border);
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .setting-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c8d8ff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .setting-card .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .setting-card .input-group input,
+        .setting-card .input-group select {
+            flex: 1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 14px;
+            min-width: 120px;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        .setting-card .input-group input:focus,
+        .setting-card .input-group select:focus {
+            border-color: #4a90e2;
+        }
+        .setting-card .input-group button {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: none;
+            background: #4a90e2;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+        .setting-card .input-group button:hover {
+            background: #5a9ef0;
+            transform: scale(1.02);
+        }
+        .setting-card .input-group button.btn-secondary {
+            background: var(--card-hover-bg);
+            color: var(--text-primary);
+        }
+        .setting-card .input-group button.btn-secondary:hover {
+            background: var(--btn-hover-bg);
+        }
+        .setting-card .hint-text {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .quick-actions a {
+            padding: 7px 16px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .quick-actions a:hover {
+            background: var(--card-hover-bg);
+            transform: translateY(-2px);
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .data-actions button {
+            padding: 7px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.3s;
+            background: var(--card-hover-bg);
+            color: var(--text-primary);
+        }
+        .data-actions button:hover {
+            background: var(--btn-hover-bg);
+            transform: scale(1.02);
+        }
+        .data-actions .btn-export {
+            background: #48bb78;
+            color: #fff;
+        }
+        .data-actions .btn-export:hover {
+            background: #5ac88a;
+        }
+        .data-actions .btn-import {
+            background: #ecc94b;
+            color: #333;
+        }
+        .data-actions .btn-import:hover {
+            background: #f5d95a;
+        }
+        .data-actions .btn-reset {
+            background: #e53e3e;
+            color: #fff;
+        }
+        .data-actions .btn-reset:hover {
+            background: #f54e4e;
+        }
+        #importFileInput {
+            display: none;
+        }
+
+        /* ============================================================
+                   5. 深色模式切换
+                   ============================================================ */
+        .theme-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 4px 0;
+        }
+        .theme-toggle {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid var(--card-border);
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .theme-toggle .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fff;
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        [data-theme="dark"] .theme-toggle {
+            background: rgba(74, 144, 226, 0.3);
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+        [data-theme="dark"] .theme-toggle .toggle-thumb {
+            transform: translateX(24px);
+            background: #8bb8ff;
+        }
+        .theme-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            user-select: none;
+        }
+        .theme-label .icon {
+            font-size: 18px;
+        }
+
+        /* ============================================================
+                   6. 标签云
+                   ============================================================ */
+        .tag-cloud-wrapper {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            padding: 18px 22px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 18px;
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .tag-cloud-wrapper h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c8d8ff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            min-height: 40px;
+            align-items: center;
+        }
+        .tag-cloud .tag-item {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 16px;
+            background: var(--tag-bg);
+            color: var(--tag-color);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+        .tag-cloud .tag-item:hover {
+            transform: scale(1.08);
+            border-color: var(--tag-color);
+            background: rgba(74, 144, 226, 0.25);
+        }
+        .tag-cloud .tag-item .tag-count {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-left: 3px;
+        }
+        .tag-cloud .tag-empty {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ============================================================
+                   7. 快捷链接
+                   ============================================================ */
+        .quicklinks-wrapper {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            padding: 18px 22px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 18px;
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .quicklinks-wrapper h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c8d8ff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quicklinks-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            min-height: 36px;
+        }
+        .quicklinks-list .ql-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px 4px 10px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            font-size: 13px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: 0.25s;
+        }
+        .quicklinks-list .ql-item:hover {
+            background: var(--card-hover-bg);
+            transform: translateY(-2px);
+            border-color: rgba(74, 144, 226, 0.3);
+        }
+        .quicklinks-list .ql-item .ql-del {
+            cursor: pointer;
+            opacity: 0.4;
+            font-size: 14px;
+            transition: 0.2s;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0 2px;
+        }
+        .quicklinks-list .ql-item .ql-del:hover {
+            opacity: 1;
+            color: #e53e3e;
+        }
+        .quicklinks-list .ql-empty {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .quicklinks-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .quicklinks-input-group input {
+            flex: 1;
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 13px;
+            min-width: 100px;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        .quicklinks-input-group input:focus {
+            border-color: #4a90e2;
+        }
+        .quicklinks-input-group button {
+            padding: 7px 18px;
+            border-radius: 8px;
+            border: none;
+            background: #4a90e2;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+        .quicklinks-input-group button:hover {
+            background: #5a9ef0;
+        }
+
+        /* ============================================================
+                   8. 最近动态
+                   ============================================================ */
+        .timeline-wrapper {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            border-radius: 14px;
+            padding: 18px 22px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 18px;
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .timeline-wrapper h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #c8d8ff;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .timeline::-webkit-scrollbar {
+            width: 4px;
+        }
+        .timeline::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .timeline::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 4px;
+        }
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border-left: 3px solid #4a90e2;
+            transition: background 0.2s;
+        }
+        .timeline-item:hover {
+            background: var(--card-hover-bg);
+        }
+        .timeline-item .tl-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .timeline-item .tl-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .timeline-item .tl-info .tl-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .timeline-item .tl-info .tl-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .timeline-item .tl-info .tl-meta .tl-cat {
+            color: var(--tag-color);
+        }
+        .timeline-item .tl-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .timeline-empty {
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 12px 0;
+            text-align: center;
+        }
+
+        /* ============================================================
+                   9. 底部
+                   ============================================================ */
+        .footer-note {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-more-muted);
+            border-top: 1px solid var(--card-border);
+            padding-top: 16px;
+        }
+
+        /* ============================================================
+                   10. 响应式
+                   ============================================================ */
+        @media (max-width: 1024px) {
+            .page-content {
+                max-width: 80%;
+            }
+        }
+        @media (max-width: 768px) {
+            .page-content {
+                max-width: 94%;
+                padding: 70px 0 14px;
+            }
+            .profile-card {
+                padding: 18px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+            .profile-avatar {
+                width: 66px;
+                height: 66px;
+                font-size: 28px;
+            }
+            .profile-info .username {
+                justify-content: center;
+            }
+            .profile-info .username input {
+                width: 150px;
+                font-size: 18px;
+            }
+            .profile-info .bio {
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .stat-card .stat-number {
+                font-size: 24px;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .modal-box {
+                padding: 20px 18px;
+                width: 96%;
+            }
+            .modal-box .modal-avatar-preview {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+            .timeline-item {
+                flex-wrap: wrap;
+            }
+            .timeline-item .tl-time {
+                width: 100%;
+                padding-left: 30px;
+                font-size: 11px;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px 8px;
+            }
+            .stat-card .stat-number {
+                font-size: 20px;
+            }
+            .stat-card .stat-label {
+                font-size: 11px;
+            }
+            .setting-card {
+                padding: 14px 16px;
+            }
+            .quick-actions a {
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            .data-actions button {
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            .profile-info .username input {
+                width: 120px;
+                font-size: 16px;
+            }
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            .modal-box .modal-avatar-preview {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+            .tag-cloud .tag-item {
+                font-size: 12px;
+                padding: 2px 10px;
+            }
+            .quicklinks-input-group input {
+                min-width: 80px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航栏占位 ===== -->
+    <div id="nav-placeholder"></div>
+
+    <!-- ===== “我的”页面内容 ===== -->
+    <div id="mine" class="page-content">
+        <div class="animate-fade-in delay-1">
+
+            <!-- ====== 1. 个人资料卡（头像可点击） ====== -->
+            <div class="profile-card">
+                <!-- 头像区域（点击弹出修改弹窗） -->
+                <div class="profile-avatar-wrapper" onclick="openAvatarModal()" title="点击更换头像">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <span id="avatarFallback">Y</span>
+                    </div>
+                    <span class="avatar-edit-hint">📷 更换</span>
+                </div>
+
+                <div class="profile-info">
+                    <div class="greeting" id="greetingText">🌅 早上好</div>
+                    <div class="username">
+                        <input type="text" id="usernameInput" placeholder="输入你的名字" value="旅行者" />
+                        <span class="hint">✏️ 点击修改</span>
+                    </div>
+                    <div class="bio">
+                        <span>📌 已收录</span>
+                        <span id="totalLinks">0</span> 个网址 ·
+                        <span id="totalImages">0</span> 张图片 ·
+                        <span id="totalGuides">0</span> 篇攻略
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 2. 统计卡片 ====== -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <span class="stat-icon">🔗</span>
+                    <div class="stat-number" id="statLinks">0</div>
+                    <div class="stat-label">网址链接</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🖼️</span>
+                    <div class="stat-number" id="statImages">0</div>
+                    <div class="stat-label">图片收藏</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🎮</span>
+                    <div class="stat-number" id="statGuides">0</div>
+                    <div class="stat-label">攻略角色</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📂</span>
+                    <div class="stat-number" id="statCategories">0</div>
+                    <div class="stat-label">分类总数</div>
+                </div>
+            </div>
+
+            <!-- ====== 3. 设置区域 ====== -->
+            <div class="settings-grid">
+
+                <!-- 背景设置 -->
+                <div class="setting-card">
+                    <h4>🎨 页面背景</h4>
+                    <div class="input-group">
+                        <input type="text" id="bgInput" placeholder="输入图片 URL ..." />
+                        <button onclick="applyBackground()">应用</button>
+                        <button class="btn-secondary" onclick="resetBackground()">重置</button>
+                    </div>
+                    <div class="hint-text">💡 支持任意图片链接，推荐 Unsplash</div>
+                </div>
+
+                <!-- 深色模式 -->
+                <div class="setting-card">
+                    <h4>🌓 深色模式</h4>
+                    <div class="theme-toggle-wrapper">
+                        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                        <span class="theme-label">
+                            <span class="icon" id="themeIcon">☀️</span>
+                            <span id="themeLabel">浅色模式</span>
+                        </span>
+                    </div>
+                    <div class="hint-text">切换后自动保存偏好，所有页面生效</div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="setting-card">
+                    <h4>⚡ 快速操作</h4>
+                    <div class="quick-actions">
+                        <a href="index.html">➕ 添加网址</a>
+                        <a href="images.html">🖼️ 添加图片</a>
+                        <a href="guides.html">📝 添加攻略</a>
+                        <a href="index.html">📂 管理分类</a>
+                    </div>
+                </div>
+
+                <!-- 数据枢纽 -->
+                <div class="setting-card">
+                    <h4>💾 数据枢纽</h4>
+                    <div class="data-actions">
+                        <button class="btn-export" onclick="exportAllData()">📤 导出全部</button>
+                        <button class="btn-import" onclick="document.getElementById('importFileInput').click()">📥 导入数据</button>
+                        <input type="file" id="importFileInput" accept=".json" onchange="importAllData(event)" />
+                        <button class="btn-reset" onclick="resetAllData()">🗑️ 清空</button>
+                    </div>
+                    <div class="hint-text">💡 导出为 JSON 备份，可在其他设备导入</div>
+                </div>
+
+            </div>
+
+            <!-- ====== 4. 标签云 ====== -->
+            <div class="tag-cloud-wrapper animate-fade-in delay-2">
+                <h4>🏷️ 标签云 <span style="font-size:12px; font-weight:400; color:var(--text-muted);">（点击标签筛选攻略）</span></h4>
+                <div class="tag-cloud" id="tagCloud">
+                    <span class="tag-empty">加载中...</span>
+                </div>
+            </div>
+
+            <!-- ====== 5. 快捷链接管理 ====== -->
+            <div class="quicklinks-wrapper animate-fade-in delay-3">
+                <h4>🔗 我的快捷链接 <span style="font-size:12px; font-weight:400; color:var(--text-muted);">（自定义常用入口）</span></h4>
+                <div class="quicklinks-list" id="quicklinksList">
+                    <span class="ql-empty">暂无快捷链接，添加一个吧</span>
+                </div>
+                <div class="quicklinks-input-group">
+                    <input type="text" id="qlNameInput" placeholder="名称，如：百度" />
+                    <input type="text" id="qlUrlInput" placeholder="网址，如：https://baidu.com" />
+                    <button onclick="addQuickLink()">添加</button>
+                </div>
+            </div>
+
+            <!-- ====== 6. 最近动态时间线 ====== -->
+            <div class="timeline-wrapper animate-fade-in delay-4">
+                <h4>📋 最近动态 <span style="font-size:12px; font-weight:400; color:var(--text-muted);">（最新添加的内容）</span></h4>
+                <div class="timeline" id="timelineContainer">
+                    <div class="timeline-empty">加载中...</div>
+                </div>
+            </div>
+
+            <!-- ====== 底部 ====== -->
+            <div class="footer-note">
+                MyNav · 你的个人导航站 · 数据存储在本地浏览器
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ====== 弹窗：头像修改 ====== -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal-box">
+            <h3>📷 更换头像</h3>
+
+            <!-- 预览 -->
+            <div class="modal-avatar-preview" id="avatarPreview">
+                <span class="fallback-text" id="previewFallback">Y</span>
+            </div>
+
+            <!-- 方式一：上传图片 -->
+            <input type="file" id="avatarFileInput" accept="image/*" onchange="previewAvatarFile(event)" />
+            <div style="font-size:12px; color:var(--text-muted); margin-top:-8px; margin-bottom:12px;">📁 支持 JPG / PNG / GIF，建议 200×200 以上</div>
+
+            <div class="divider">或者</div>
+
+            <!-- 方式二：输入图片 URL -->
+            <input type="text" id="avatarUrlInput" placeholder="输入图片链接 (如 https://example.com/avatar.jpg)" />
+            <button class="btn-save" onclick="previewAvatarUrl()" style="width:100%; padding:8px; border-radius:8px; border:none; background:rgba(74,144,226,0.2); color:var(--text-primary); cursor:pointer; font-size:13px;">预览 URL</button>
+
+            <div class="modal-actions">
+                <button class="btn-danger" onclick="removeAvatar()">移除头像</button>
+                <button class="btn-cancel" onclick="closeAvatarModal()">取消</button>
+                <button class="btn-save" onclick="saveAvatar()">保存头像</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <script>
+        // ================================================================
+        // 1. 深色模式切换
+        // ================================================================
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            localStorage.setItem('myTheme', newTheme);
+            if (newTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+            document.getElementById('themeLabel').textContent = isDark ? '深色模式' : '浅色模式';
+        }
+
+        function loadTheme() {
+            const theme = localStorage.getItem('myTheme') || 'light';
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            updateThemeUI();
+        }
+        loadTheme();
+
+        // ================================================================
+        // 2. 个人资料（含头像）
+        // ================================================================
+        function loadProfile() {
+            const profile = JSON.parse(localStorage.getItem('myProfile')) || { name: '旅行者' };
+            const name = profile.name || '旅行者';
+            document.getElementById('usernameInput').value = name;
+            updateGreeting(name);
+            // 加载头像
+            loadAvatar();
+        }
+
+        function updateGreeting(name) {
+            const hours = new Date().getHours();
+            let greet = hours >= 5 && hours < 12 ? '🌅 早上好' :
+                hours >= 12 && hours < 18 ? '☕ 下午好' :
+                '🌙 晚上好';
+            document.getElementById('greetingText').textContent = `${greet}，${name}`;
+        }
+
+        // ---- 头像管理 ----
+        function getAvatar() {
+            return localStorage.getItem('myAvatar') || '';
+        }
+
+        function setAvatar(data) {
+            if (data) {
+                localStorage.setItem('myAvatar', data);
+            } else {
+                localStorage.removeItem('myAvatar');
+            }
+            loadAvatar();
+        }
+
+        function loadAvatar() {
+            const avatarData = getAvatar();
+            const container = document.getElementById('profileAvatar');
+            const fallback = document.getElementById('avatarFallback');
+            const name = (JSON.parse(localStorage.getItem('myProfile')) || { name: '旅行者' }).name || '旅行者';
+
+            // 清空容器
+            container.innerHTML = '';
+
+            if (avatarData && avatarData.startsWith('data:image') || avatarData && avatarData.startsWith('http')) {
+                // 有自定义头像
+                const img = document.createElement('img');
+                img.src = avatarData;
+                img.alt = '头像';
+                img.onerror = function() {
+                    // 如果图片加载失败，回退到文字
+                    container.innerHTML = `<span id="avatarFallback" style="font-size:34px;font-weight:700;color:#fff;">${name.charAt(0).toUpperCase()}</span>`;
+                };
+                container.appendChild(img);
+            } else {
+                // 默认显示首字母
+                container.innerHTML =
+                    `<span id="avatarFallback" style="font-size:34px;font-weight:700;color:#fff;">${name.charAt(0).toUpperCase()}</span>`;
+            }
+        }
+
+        // ---- 头像修改弹窗 ----
+        let tempAvatarData = '';
+
+        function openAvatarModal() {
+            tempAvatarData = getAvatar();
+            const modal = document.getElementById('avatarModal');
+            const preview = document.getElementById('avatarPreview');
+            const fallback = document.getElementById('previewFallback');
+            const name = (JSON.parse(localStorage.getItem('myProfile')) || { name: '旅行者' }).name || '旅行者';
+
+            // 重置预览
+            preview.innerHTML = '';
+            document.getElementById('avatarFileInput').value = '';
+            document.getElementById('avatarUrlInput').value = '';
+
+            if (tempAvatarData && (tempAvatarData.startsWith('data:image') || tempAvatarData.startsWith('http'))) {
+                const img = document.createElement('img');
+                img.src = tempAvatarData;
+                img.alt = '头像预览';
+                img.onerror = function() {
+                    preview.innerHTML =
+                        `<span class="fallback-text" id="previewFallback" style="font-size:40px;font-weight:700;color:#fff;">${name.charAt(0).toUpperCase()}</span>`;
+                };
+                preview.appendChild(img);
+            } else {
+                preview.innerHTML =
+                    `<span class="fallback-text" id="previewFallback" style="font-size:40px;font-weight:700;color:#fff;">${name.charAt(0).toUpperCase()}</span>`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeAvatarModal() {
+            document.getElementById('avatarModal').classList.remove('active');
+        }
+
+        function previewAvatarFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempAvatarData = e.target.result;
+                const preview = document.getElementById('avatarPreview');
+                preview.innerHTML = `<img src="${tempAvatarData}" alt="预览" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewAvatarUrl() {
+            const url = document.getElementById('avatarUrlInput').value.trim();
+            if (!url) { alert('请输入图片链接'); return; }
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('请输入有效的图片链接 (以 http:// 或 https:// 开头)');
+                return;
+            }
+            tempAvatarData = url;
+            const preview = document.getElementById('avatarPreview');
+            preview.innerHTML = `<img src="${url}" alt="预览" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="alert('图片加载失败，请检查链接是否正确')">`;
+        }
+
+        function saveAvatar() {
+            if (tempAvatarData) {
+                setAvatar(tempAvatarData);
+            } else {
+                // 如果数据为空，移除头像
+                localStorage.removeItem('myAvatar');
+                loadAvatar();
+            }
+            closeAvatarModal();
+            loadAvatar();
+        }
+
+        function removeAvatar() {
+            if (confirm('确定要移除当前头像吗？')) {
+                tempAvatarData = '';
+                localStorage.removeItem('myAvatar');
+                closeAvatarModal();
+                loadAvatar();
+            }
+        }
+
+        // ---- 昵称修改 ----
+        document.getElementById('usernameInput').addEventListener('change', function() {
+            const name = this.value.trim() || '旅行者';
+            const profile = JSON.parse(localStorage.getItem('myProfile')) || {};
+            profile.name = name;
+            localStorage.setItem('myProfile', JSON.stringify(profile));
+            updateGreeting(name);
+            loadAvatar(); // 刷新头像（首字母可能变化）
+        });
+
+        // ================================================================
+        // 3. 数据读取
+        // ================================================================
+        function getNavData() {
+            try { return JSON.parse(localStorage.getItem('myNavLinks')) || []; } catch (e) { return []; }
+        }
+
+        function getImageData() {
+            try { return JSON.parse(localStorage.getItem('myImageLinks')) || []; } catch (e) { return []; }
+        }
+
+        function getGuidesData() {
+            try { return JSON.parse(localStorage.getItem('myGuidesData')) || []; } catch (e) { return []; }
+        }
+
+        function getQuickLinks() {
+            try { return JSON.parse(localStorage.getItem('myQuickLinks')) || []; } catch (e) { return []; }
+        }
+
+        function saveQuickLinks(data) {
+            localStorage.setItem('myQuickLinks', JSON.stringify(data));
+            renderQuickLinks();
+        }
+
+        // ================================================================
+        // 4. 统计数据
+        // ================================================================
+        function updateStats() {
+            const navData = getNavData();
+            const imgData = getImageData();
+            const guideData = getGuidesData();
+
+            let linkCount = 0,
+                imgCount = 0,
+                guideCount = 0;
+            navData.forEach(cat => { if (cat.links) linkCount += cat.links.length; });
+            imgData.forEach(cat => { if (cat.links) imgCount += cat.links.length; });
+            guideData.forEach(cat => { if (cat.guides) guideCount += cat.guides.length; });
+
+            const totalCats = navData.length + imgData.length + guideData.length;
+
+            document.getElementById('statLinks').textContent = linkCount;
+            document.getElementById('statImages').textContent = imgCount;
+            document.getElementById('statGuides').textContent = guideCount;
+            document.getElementById('statCategories').textContent = totalCats;
+            document.getElementById('totalLinks').textContent = linkCount;
+            document.getElementById('totalImages').textContent = imgCount;
+            document.getElementById('totalGuides').textContent = guideCount;
+        }
+
+        // ================================================================
+        // 5. 标签云
+        // ================================================================
+        function renderTagCloud() {
+            const data = getGuidesData();
+            const tagMap = {};
+            data.forEach(cat => {
+                if (cat.guides) {
+                    cat.guides.forEach(guide => {
+                        if (guide.tag && guide.tag.trim()) {
+                            const tag = guide.tag.trim();
+                            tagMap[tag] = (tagMap[tag] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            const container = document.getElementById('tagCloud');
+            const tags = Object.keys(tagMap);
+
+            if (tags.length === 0) {
+                container.innerHTML = '<span class="tag-empty">暂无标签，在攻略中添加「角色定位」即可生成标签云</span>';
+                return;
+            }
+
+            tags.sort((a, b) => tagMap[b] - tagMap[a]);
+
+            const maxCount = tagMap[tags[0]] || 1;
+            const minCount = tagMap[tags[tags.length - 1]] || 1;
+            const range = maxCount - minCount || 1;
+
+            container.innerHTML = tags.map(tag => {
+                const count = tagMap[tag];
+                const size = 12 + (count - minCount) / range * 10;
+                return `<span class="tag-item" style="font-size:${size}px;" onclick="filterByTag('${tag.replace(/'/g, "\\'")}')">
+                            ${tag} <span class="tag-count">${count}</span>
+                        </span>`;
+            }).join('');
+        }
+
+        function filterByTag(tag) {
+            window.location.href = `guides.html?tag=${encodeURIComponent(tag)}`;
+        }
+
+        // ================================================================
+        // 6. 快捷链接
+        // ================================================================
+        function renderQuickLinks() {
+            const data = getQuickLinks();
+            const container = document.getElementById('quicklinksList');
+
+            if (data.length === 0) {
+                container.innerHTML = '<span class="ql-empty">暂无快捷链接，添加一个吧</span>';
+                return;
+            }
+
+            container.innerHTML = data.map((item, idx) => `
+                        <a href="${item.url}" target="_blank" class="ql-item">
+                            ${item.name}
+                            <button class="ql-del" onclick="event.preventDefault(); event.stopPropagation(); deleteQuickLink(${idx})" title="删除">✕</button>
+                        </a>
+                    `).join('');
+        }
+
+        function addQuickLink() {
+            const name = document.getElementById('qlNameInput').value.trim();
+            let url = document.getElementById('qlUrlInput').value.trim();
+            if (!name || !url) { alert('请输入名称和网址'); return; }
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            const data = getQuickLinks();
+            data.push({ name, url });
+            saveQuickLinks(data);
+            document.getElementById('qlNameInput').value = '';
+            document.getElementById('qlUrlInput').value = '';
+        }
+
+        function deleteQuickLink(idx) {
+            const data = getQuickLinks();
+            data.splice(idx, 1);
+            saveQuickLinks(data);
+        }
+
+        // ================================================================
+        // 7. 最近动态
+        // ================================================================
+        function renderTimeline() {
+            const navData = getNavData();
+            const imgData = getImageData();
+            const guideData = getGuidesData();
+
+            const items = [];
+
+            navData.forEach(cat => {
+                if (cat.links) {
+                    cat.links.forEach(link => {
+                        items.push({
+                            name: link.name,
+                            category: cat.name,
+                            type: '🔗',
+                            typeLabel: '网址',
+                            createdAt: link.createdAt || null,
+                            _order: items.length
+                        });
+                    });
+                }
+            });
+
+            imgData.forEach(cat => {
+                if (cat.links) {
+                    cat.links.forEach(link => {
+                        items.push({
+                            name: link.name,
+                            category: cat.name,
+                            type: '🖼️',
+                            typeLabel: '图片',
+                            createdAt: link.createdAt || null,
+                            _order: items.length
+                        });
+                    });
+                }
+            });
+
+            guideData.forEach(cat => {
+                if (cat.guides) {
+                    cat.guides.forEach(guide => {
+                        items.push({
+                            name: guide.name,
+                            category: cat.name,
+                            type: '📝',
+                            typeLabel: '攻略',
+                            createdAt: guide.createdAt || null,
+                            _order: items.length
+                        });
+                    });
+                }
+            });
+
+            items.sort((a, b) => {
+                if (a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
+                if (a.createdAt) return -1;
+                if (b.createdAt) return 1;
+                return b._order - a._order;
+            });
+
+            const recent = items.slice(0, 20);
+            const container = document.getElementById('timelineContainer');
+
+            if (recent.length === 0) {
+                container.innerHTML = '<div class="timeline-empty">还没有任何内容，快去添加吧 🚀</div>';
+                return;
+            }
+
+            container.innerHTML = recent.map(item => {
+                const timeStr = item.createdAt ?
+                    new Date(item.createdAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit' }) :
+                    '早期收藏';
+                return `
+                            <div class="timeline-item">
+                                <span class="tl-icon">${item.type}</span>
+                                <div class="tl-info">
+                                    <div class="tl-name">${item.name}</div>
+                                    <div class="tl-meta">
+                                        <span class="tl-cat">📂 ${item.category}</span>
+                                        <span>${item.typeLabel}</span>
+                                    </div>
+                                </div>
+                                <span class="tl-time">${timeStr}</span>
+                            </div>
+                        `;
+            }).join('');
+        }
+
+        // ================================================================
+        // 8. 背景设置
+        // ================================================================
+        function applyBackground() {
+            const url = document.getElementById('bgInput').value.trim();
+            if (!url) { alert('请输入图片链接'); return; }
+            document.body.style.backgroundImage = `url(${url})`;
+            localStorage.setItem('myBgImage', url);
+        }
+
+        function resetBackground() {
+            const defaultBg = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80';
+            document.body.style.backgroundImage = `url(${defaultBg})`;
+            document.getElementById('bgInput').value = '';
+            localStorage.removeItem('myBgImage');
+        }
+
+        function loadBackground() {
+            const saved = localStorage.getItem('myBgImage');
+            if (saved) {
+                document.body.style.backgroundImage = `url(${saved})`;
+                document.getElementById('bgInput').value = saved;
+            }
+        }
+
+        // ================================================================
+        // 9. 数据导出 / 导入
+        // ================================================================
+        function exportAllData() {
+            const data = {
+                version: '1.0',
+                exportedAt: new Date().toISOString(),
+                navLinks: getNavData(),
+                imageLinks: getImageData(),
+                guidesData: getGuidesData(),
+                quickLinks: getQuickLinks(),
+                profile: JSON.parse(localStorage.getItem('myProfile')) || { name: '旅行者' },
+                avatar: getAvatar(),
+                bgImage: localStorage.getItem('myBgImage') || '',
+                theme: localStorage.getItem('myTheme') || 'light'
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `myNavBackup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!imported.navLinks && !imported.imageLinks && !imported.guidesData) {
+                        alert('❌ 无效的备份文件');
+                        return;
+                    }
+                    if (confirm('将覆盖当前所有数据（网址、图片、攻略、快捷链接、个人设置），确认？')) {
+                        if (imported.navLinks) localStorage.setItem('myNavLinks', JSON.stringify(imported.navLinks));
+                        if (imported.imageLinks) localStorage.setItem('myImageLinks', JSON.stringify(imported
+                            .imageLinks));
+                        if (imported.guidesData) localStorage.setItem('myGuidesData', JSON.stringify(imported
+                            .guidesData));
+                        if (imported.quickLinks) localStorage.setItem('myQuickLinks', JSON.stringify(imported
+                            .quickLinks));
+                        if (imported.profile) localStorage.setItem('myProfile', JSON.stringify(imported.profile));
+                        if (imported.avatar) localStorage.setItem('myAvatar', imported.avatar);
+                        if (imported.bgImage) {
+                            localStorage.setItem('myBgImage', imported.bgImage);
+                            document.body.style.backgroundImage = `url(${imported.bgImage})`;
+                            document.getElementById('bgInput').value = imported.bgImage;
+                        }
+                        if (imported.theme) {
+                            localStorage.setItem('myTheme', imported.theme);
+                            if (imported.theme === 'dark') {
+                                document.documentElement.setAttribute('data-theme', 'dark');
+                            } else {
+                                document.documentElement.removeAttribute('data-theme');
+                            }
+                            updateThemeUI();
+                        }
+                        loadProfile();
+                        updateStats();
+                        renderTagCloud();
+                        renderQuickLinks();
+                        renderTimeline();
+                        alert('✅ 数据导入成功！');
+                    }
+                } catch (err) {
+                    alert('❌ 解析文件失败：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ================================================================
+        // 10. 清空数据
+        // ================================================================
+        function resetAllData() {
+            if (confirm('⚠️ 确定要清空所有数据吗？此操作不可撤销！')) {
+                if (confirm('再次确认：真的要全部删除吗？')) {
+                    localStorage.removeItem('myNavLinks');
+                    localStorage.removeItem('myImageLinks');
+                    localStorage.removeItem('myGuidesData');
+                    localStorage.removeItem('myQuickLinks');
+                    localStorage.removeItem('myProfile');
+                    localStorage.removeItem('myAvatar');
+                    localStorage.removeItem('myBgImage');
+                    loadProfile();
+                    updateStats();
+                    renderTagCloud();
+                    renderQuickLinks();
+                    renderTimeline();
+                    document.body.style.backgroundImage = '';
+                    document.getElementById('bgInput').value = '';
+                    alert('🗑️ 所有数据已清空');
+                }
+            }
+        }
+
+        // ================================================================
+        // 11. 点击弹窗外部关闭
+        // ================================================================
+        document.getElementById('avatarModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAvatarModal();
+        });
+
+        // ================================================================
+        // 12. 初始化
+        // ================================================================
+        loadProfile();
+        loadBackground();
+        updateStats();
+        renderTagCloud();
+        renderQuickLinks();
+        renderTimeline();
+
+        setInterval(() => {
+            updateStats();
+            renderTimeline();
+            renderTagCloud();
+        }, 30000);
+
+        console.log('👤 “我的”页面已加载 — 头像支持自定义（上传/URL）');
+        console.log('💡 点击头像即可更换');
+    </script>
+
+    <!-- 引入导航栏 -->
+    <script src="nav.js"></script>
+</body>
+</html>
