@@ -1,0 +1,112 @@
+<!-- nav.html -->
+<style>
+    /* 1. 导航栏最外层：负责背景色和全宽显示 */
+    .navbar {
+        background-color: #4a5568; /* 深灰蓝色背景，接近截图颜色 */
+        width: 100%;
+        height: 60px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: center; /* 让内部容器水平居中 */
+        align-items: center;
+    }
+
+    /* 2. 核心修改：内容容器，限制宽度为 60% */
+    .nav-container {
+        width: 60%;           /* 【关键点】这里控制整体内容的宽度比例 */
+        height: 100%;
+        display: flex;        /* 使用 Flex 布局 */
+        align-items: center;  /* 垂直居中 */
+        justify-content: space-between; /* 【关键点】让 Logo、菜单、搜索框三者之间自动平分间距 */
+    }
+
+    /* --- 以下是内部元素样式 --- */
+
+    /* 左侧 Logo */
+    .nav-logo {
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        white-space: nowrap; /* 防止文字换行 */
+    }
+
+    /* 中间 菜单链接区域 */
+    .nav-links {
+        display: flex;
+        gap: 130px; /* 菜单文字之间的固定间距 */
+    }
+
+    .nav-item {
+        text-decoration: none;
+        color: #e2e8f0; /* 浅灰色字体 */
+        font-size: 16px;
+        transition: color 0.3s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+        color: #63b3ed; /* 悬停或激活时的亮蓝色 */
+        font-weight: 500;
+    }
+
+    /* 右侧 搜索框区域 */
+    .nav-search {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-search input {
+        background-color: rgba(255, 255, 255, 0.15); /* 半透明背景 */
+        border: none;
+        border-radius: 20px; /* 圆角胶囊状 */
+        padding: 8px 15px 8px 35px; /* 左边留出图标的位置 */
+        color: #fff;
+        outline: none;
+        font-size: 14px;
+        width: 180px;
+        transition: background-color 0.3s;
+    }
+
+    .nav-search input::placeholder {
+        color: #cbd5e0;
+    }
+
+    .nav-search input:focus {
+        background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* 搜索图标 (使用简单的字符模拟，或者你可以用 SVG/Font Awesome) */
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: #cbd5e0;
+        font-size: 14px;
+        pointer-events: none; /* 让点击穿透到输入框 */
+    }
+</style>
+
+<!-- HTML 结构 -->
+<nav class="navbar">
+    <!-- 注意：这里多了一层 div.nav-container -->
+    <div class="nav-container">
+        
+        <!-- 1. Logo -->
+        <div class="nav-logo" onclick="location.href='index.html'">MyNav</div>
+
+        <!-- 2. 菜单链接 -->
+        <div class="nav-links">
+            <a class="nav-item" href="index.html">首页</a>
+            <a class="nav-item" href="images.html">图片</a>
+            <a class="nav-item" href="guides.html">攻略</a>
+            <a class="nav-item" href="#">我的</a>
+        </div>
+
+        <!-- 3. 搜索框 -->
+        <div class="nav-search">
+            <span class="search-icon">🔍</span> <!-- 这里用 emoji 暂代图标，避免加载失败变大 -->
+            <input type="text" placeholder="搜索本页网址...">
+        </div>
+
+    </div>
+</nav>
