@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>攻略中心 - 我的个人导航站</title>
+    <style>
+        /* ========== 全部样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff;
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+        .page-content {
+            display: block;
+            padding: 80px 0 20px;
+            max-width: 60%;
+            margin: auto;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        /* 轮播图 */
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            background: #1a1a2e;
+        }
+        .carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .carousel-slide {
+            flex: 0 0 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .carousel-slide .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 60%, rgba(0, 0, 0, 0.3) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px 40px;
+        }
+        .slide-overlay h2 {
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .slide-overlay p {
+            font-size: 15px;
+            opacity: 0.9;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            max-width: 60%;
+            line-height: 1.5;
+        }
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            user-select: none;
+        }
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-50%) scale(1.08);
+        }
+        .carousel-btn.prev {
+            left: 16px;
+        }
+        .carousel-btn.next {
+            right: 16px;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .carousel-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .carousel-dots span.active {
+            background: #fff;
+            transform: scale(1.25);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+        }
+        .carousel-dots span:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 分类面板 */
+        .accordion-category {
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .accordion-category:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .accordion-header:hover .category-title {
+            color: #aac8ff;
+        }
+        .category-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #8bb8ff;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-title .game-icon {
+            font-size: 22px;
+        }
+        .category-title .count-badge {
+            font-weight: 400;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: 4px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: transform 0.2s, opacity 0.2s;
+            color: white;
+            opacity: 0.7;
+        }
+        .action-btn:hover {
+            transform: scale(1.12);
+            opacity: 1;
+        }
+        .btn-add {
+            background: #48bb78;
+        }
+        .btn-manage {
+            background: #ecc94b;
+            color: #333;
+        }
+        .btn-arrow {
+            background: transparent;
+            color: #8bb8ff;
+            transform: none !important;
+            opacity: 0.6;
+        }
+        .accordion-category.active .btn-arrow {
+            transform: rotate(180deg) !important;
+            opacity: 1;
+        }
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.45s ease;
+        }
+        .accordion-category.active .accordion-body {
+            max-height: 3000px;
+        }
+
+        /* 攻略卡片网格 */
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 10px 16px 18px;
+        }
+        .guide-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(4px);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .guide-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(74, 144, 226, 0.4);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .guide-card .card-avatar {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            display: block;
+            background: #1a1a2e;
+        }
+        .guide-card .card-info {
+            padding: 10px 12px 12px;
+        }
+        .guide-card .card-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e8eeff;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .guide-card .card-info .role-tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 1px 10px;
+            border-radius: 12px;
+            background: rgba(74, 144, 226, 0.3);
+            color: #8bb8ff;
+            margin-top: 2px;
+        }
+        .guide-card .card-info .role-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        .guide-card .card-actions {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .guide-card:hover .card-actions {
+            opacity: 1;
+        }
+        .guide-card .card-actions button {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            transition: 0.2s;
+        }
+        .guide-card .card-actions button:hover {
+            transform: scale(1.1);
+        }
+        .guide-card .card-actions .btn-edit-card {
+            color: #ecc94b;
+        }
+        .guide-card .card-actions .btn-del-card {
+            color: #e53e3e;
+        }
+
+        /* 弹窗通用 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .modal-box {
+            background: #1e1e2f;
+            padding: 28px 32px;
+            border-radius: 14px;
+            width: 480px;
+            max-width: 94%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+        .modal-box h3 {
+            margin-bottom: 16px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #c8d8ff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-box .modal-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+        .modal-box .modal-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .modal-box .modal-meta span {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 14px;
+            border-radius: 12px;
+        }
+        .modal-box .modal-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #d0d8e8;
+            white-space: pre-wrap;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px 18px;
+            border-radius: 10px;
+            border-left: 3px solid #4a90e2;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .modal-box .modal-content:empty::before {
+            content: '暂无攻略内容';
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-cancel {
+            background: #3a3a4e;
+            color: #ccc;
+        }
+        .btn-cancel:hover {
+            background: #4a4a5e;
+        }
+        .btn-save {
+            background: #4a90e2;
+            color: #fff;
+        }
+        .btn-save:hover {
+            background: #5a9ef0;
+            transform: scale(1.02);
+        }
+
+        /* ---- 新增：跳转链接按钮 ---- */
+        .btn-link {
+            background: #48bb78;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-link:hover {
+            background: #5ac88a;
+            transform: scale(1.02);
+        }
+        .btn-link svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .toolbar button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        #importFileInput {
+            display: none;
+        }
+
+        /* 表单 */
+        .modal-box input,
+        .modal-box select,
+        .modal-box textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a3e;
+            color: #fff;
+            outline: none;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        .modal-box input:focus,
+        .modal-box select:focus,
+        .modal-box textarea:focus {
+            border-color: #4a90e2;
+        }
+        .modal-box textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .modal-box label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .modal-box .form-row {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-box .form-row>* {
+            flex: 1;
+        }
+
+        /* 管理列表 */
+        .manage-list {
+            list-style: none;
+        }
+        .manage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .manage-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .manage-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .manage-item-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #222;
+            flex-shrink: 0;
+        }
+        .manage-item-info span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+        }
+        .manage-item-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            margin-left: 8px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .manage-item-actions button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-edit {
+            color: #ecc94b;
+        }
+        .btn-del {
+            color: #e53e3e;
+        }
+
+        /* 空状态 */
+        .empty-hint {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 30px 0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .empty-hint .big-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .page-content {
+                max-width: 80%;
+            }
+            .carousel-wrapper {
+                height: 280px;
+            }
+            .slide-overlay h2 {
+                font-size: 22px;
+            }
+            .slide-overlay p {
+                font-size: 13px;
+                max-width: 80%;
+            }
+        }
+        @media (max-width: 768px) {
+            .page-content {
+                max-width: 94%;
+                padding: 70px 0 16px;
+            }
+            .carousel-wrapper {
+                height: 200px;
+                border-radius: 12px;
+            }
+            .carousel-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+            }
+            .carousel-btn.prev {
+                left: 8px;
+            }
+            .carousel-btn.next {
+                right: 8px;
+            }
+            .slide-overlay {
+                padding: 16px 20px;
+            }
+            .slide-overlay h2 {
+                font-size: 18px;
+            }
+            .slide-overlay p {
+                font-size: 12px;
+                max-width: 90%;
+            }
+            .carousel-dots span {
+                width: 8px;
+                height: 8px;
+            }
+            .guide-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                padding: 8px 10px 14px;
+            }
+            .modal-box {
+                padding: 20px 18px;
+                width: 96%;
+            }
+            .modal-box .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .toolbar button {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .accordion-header {
+                padding: 10px 14px;
+            }
+            .category-title {
+                font-size: 14px;
+            }
+            .guide-card .card-actions {
+                opacity: 1;
+            }
+            .guide-card .card-actions button {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 480px) {
+            .carousel-wrapper {
+                height: 160px;
+            }
+            .slide-overlay h2 {
+                font-size: 15px;
+            }
+            .slide-overlay p {
+                font-size: 11px;
+                max-width: 100%;
+            }
+            .carousel-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+            }
+            .guide-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 8px;
+                padding: 6px 6px 12px;
+            }
+            .guide-card .card-info {
+                padding: 6px 8px 8px;
+            }
+            .guide-card .card-info h4 {
+                font-size: 12px;
+            }
+            .guide-card .card-info .role-desc {
+                font-size: 11px;
+                -webkit-line-clamp: 1;
+            }
+            .modal-box {
+                padding: 16px 14px;
+            }
+            .modal-box h3 {
+                font-size: 17px;
+            }
+            .modal-box .modal-content {
+                font-size: 14px;
+                padding: 12px 14px;
+            }
+        }
+        .modal-box::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .modal-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        .modal-box::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航栏占位 ===== -->
+    <div id="nav-placeholder"></div>
+
+    <!-- ===== 攻略页内容 ===== -->
+    <div id="guides" class="page-content">
+        <div class="animate-fade-in delay-1">
+
+            <!-- ====== 1. 轮播图 ====== -->
+            <div class="carousel-wrapper" id="carouselWrapper">
+                <div class="carousel-track" id="carouselTrack"></div>
+                <button class="carousel-btn prev" id="carouselPrev">‹</button>
+                <button class="carousel-btn next" id="carouselNext">›</button>
+                <div class="carousel-dots" id="carouselDots"></div>
+            </div>
+
+            <!-- ====== 2. 标题栏 ====== -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h2 style="font-size:20px; font-weight:600; letter-spacing:0.5px;">🎮 游戏攻略中心</h2>
+                <div class="toolbar">
+                    <button onclick="addCategory()">+ 添加游戏</button>
+                    <button onclick="exportData()">📤 导出</button>
+                    <button onclick="document.getElementById('importFileInput').click()">📥 导入</button>
+                    <input type="file" id="importFileInput" accept=".json" onchange="importData(event)" />
+                </div>
+            </div>
+
+            <!-- ====== 3. 分类列表 ====== -->
+            <div id="linkContainer"></div>
+        </div>
+    </div>
+
+    <!-- ====== 弹窗：查看攻略详情（含跳转按钮） ====== -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <h3>
+                <img class="modal-avatar" id="detailAvatar" src="" alt="角色" />
+                <span id="detailName">角色名</span>
+            </h3>
+            <div class="modal-meta">
+                <span id="detailGame">🎮 游戏名</span>
+                <span id="detailTag">🏷️ 标签</span>
+            </div>
+            <div class="modal-content" id="detailContent"></div>
+            <div class="modal-actions">
+                <!-- ===== 新增：跳转攻略链接按钮 ===== -->
+                <a id="detailLinkBtn" href="#" target="_blank" class="btn-link" style="display:none; padding:8px 20px; border-radius:8px; text-decoration:none; gap:6px;">
+                    <svg viewBox="0 0 24 24"><path d="M10 6v2H5v11h11v-5h2v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6zm11-3v8h-2V6.413l-7.793 7.794-1.414-1.414L17.585 5H13V3h8z"/></svg>
+                    查看完整攻略 →
+                </a>
+                <button class="btn-cancel" onclick="closeDetailModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 弹窗：添加/编辑角色攻略（含链接输入） ====== -->
+    <div class="modal-overlay" id="guideModal">
+        <div class="modal-box">
+            <h3 id="guideModalTitle">添加角色攻略</h3>
+            <input type="text" id="guideName" placeholder="角色名称" />
+            <input type="text" id="guideAvatar" placeholder="角色头像链接 (可选)" />
+            <div class="form-row">
+                <input type="text" id="guideTag" placeholder="角色定位 (如: 输出/辅助)" />
+                <select id="guideCategory"></select>
+            </div>
+            <!-- ===== 新增：攻略链接输入框 ===== -->
+            <input type="text" id="guideLink" placeholder="完整攻略链接 (如 B站/视频/文章链接)" />
+            <label>攻略内容</label>
+            <textarea id="guideContent" placeholder="详细攻略内容..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeGuideModal()">取消</button>
+                <button class="btn-save" onclick="saveGuide()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 弹窗：管理游戏分类 ====== -->
+    <div class="modal-overlay" id="manageModal">
+        <div class="modal-box">
+            <h3 id="manageModalTitle">管理游戏</h3>
+            <ul id="manageList" class="manage-list"></ul>
+            <div class="modal-actions">
+                <button class="btn-save" onclick="closeManageModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <script>
+        // ================================================================
+        // 1. 轮播图
+        // ================================================================
+        const carouselData = [
+            { img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
+                title: '🎮 原神 · 璃月港', desc: '探索神秘的提瓦特大陆，开启你的冒险之旅' },
+            { img: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&w=1200&q=80',
+                title: '⚔️ 塞尔达传说 · 海拉鲁', desc: '勇者传说，在海拉鲁大陆书写属于你的传奇' },
+            { img: 'https://images.unsplash.com/photo-1558618666-fcd25c85f47c?auto=format&fit=crop&w=1200&q=80',
+                title: '🏯 只狼 · 苇名国', desc: '在战火纷飞的苇名国，演绎忍者传奇' },
+            { img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+                title: '🚀 赛博朋克 · 夜之城', desc: '在霓虹闪烁的夜之城，书写你的赛博传奇' },
+            { img: 'https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=1200&q=80',
+                title: '🏝️ 动物森友会', desc: '在无人岛上，享受悠闲的治愈生活' }
+        ];
+
+        let currentSlide = 0,
+            slideInterval = null,
+            slideCount = carouselData.length;
+
+        function renderCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const dots = document.getElementById('carouselDots');
+            track.innerHTML = carouselData.map((item, idx) => `
+                    <div class="carousel-slide" data-index="${idx}">
+                        <img src="${item.img}" alt="${item.title}" loading="lazy" />
+                        <div class="slide-overlay">
+                            <h2>${item.title}</h2>
+                            <p>${item.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+            dots.innerHTML = carouselData.map((_, idx) =>
+                `<span class="${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`
+            ).join('');
+            dots.querySelectorAll('span').forEach(dot => {
+                dot.addEventListener('click', function() { goToSlide(parseInt(this.dataset.index)); });
+            });
+            document.getElementById('carouselPrev').addEventListener('click', () => goToSlide(currentSlide - 1));
+            document.getElementById('carouselNext').addEventListener('click', () => goToSlide(currentSlide + 1));
+            const wrapper = document.getElementById('carouselWrapper');
+            wrapper.addEventListener('mouseenter', pauseAutoPlay);
+            wrapper.addEventListener('mouseleave', startAutoPlay);
+            goToSlide(0, false);
+            startAutoPlay();
+        }
+
+        function goToSlide(index, auto = true) {
+            if (index < 0) index = slideCount - 1;
+            if (index >= slideCount) index = 0;
+            currentSlide = index;
+            document.getElementById('carouselTrack').style.transform = `translateX(-${index * 100}%)`;
+            document.querySelectorAll('#carouselDots span').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            if (auto) resetAutoPlay();
+        }
+
+        function startAutoPlay() { if (!slideInterval) slideInterval = setInterval(() => goToSlide(currentSlide + 1),
+                4200); }
+
+        function pauseAutoPlay() { if (slideInterval) { clearInterval(slideInterval);
+                slideInterval = null; } }
+
+        function resetAutoPlay() { pauseAutoPlay();
+            startAutoPlay(); }
+        document.addEventListener('visibilitychange', function() { document.hidden ? pauseAutoPlay() : startAutoPlay(); });
+
+        // ================================================================
+        // 2. 数据管理（含 link 字段）
+        // ================================================================
+        const defaultData = [{
+            name: "原神",
+            icon: "🎮",
+            active: true,
+            guides: [
+                { name: "钟离", avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_20.png", tag: "护盾辅助",
+                    link: "https://bbs.nga.cn/thread.php?fid=650",
+                    content: "钟离是当前版本最强的护盾角色，E技能提供高额护盾，Q技能大范围石化控制。\n推荐圣遗物：千岩牢固4件套\n推荐武器：护摩之杖 / 黑缨枪" },
+                { name: "胡桃", avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_1.png", tag: "火系主C",
+                    link: "https://www.bilibili.com/video/BV1Xh411r7gU",
+                    content: "胡桃是火系单体爆发天花板，E技能消耗血量提升攻击力，Q技能大范围火伤。\n推荐圣遗物：魔女4件套\n推荐武器：护摩之杖 / 匣里灭辰" }
+            ]
+        }, {
+            name: "塞尔达传说",
+            icon: "⚔️",
+            active: true,
+            guides: [
+                { name: "林克", avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_3.png", tag: "勇者",
+                    link: "https://www.zeldadungeon.net/wiki/Breath_of_the_Wild_Walkthrough",
+                    content: "林克是海拉鲁的勇者，拥有多种能力：时间静止、磁力、炸弹等。\n核心装备：大师剑、海利亚盾\n建议优先完成四神兽任务" }
+            ]
+        }, {
+            name: "赛博朋克2077",
+            icon: "🚀",
+            active: false,
+            guides: [
+                { name: "V", avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_5.png", tag: "主角",
+                    link: "https://www.cyberpunk.net/zh-cn/",
+                    content: "V是夜之城的传奇佣兵，可根据玩家选择发展不同流派：\n- 技术流：擅长破解和工程\n- 力量流：近战和重型武器\n- 敏捷流：潜行和远程狙击" }
+            ]
+        }];
+
+        function getData() {
+            const stored = localStorage.getItem('myGuidesData');
+            if (stored) {
+                try { return JSON.parse(stored); } catch (e) { return defaultData; }
+            }
+            return defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('myGuidesData', JSON.stringify(data));
+            renderCategories();
+        }
+
+        function getFavicon(url) {
+            try { return new URL(url).origin + '/favicon.ico'; } catch (e) { return ''; }
+        }
+
+        // ================================================================
+        // 3. 渲染分类
+        // ================================================================
+        function renderCategories() {
+            const data = getData();
+            const container = document.getElementById('linkContainer');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                        <div class="empty-hint">
+                            <span class="big-icon">🎮</span>
+                            还没有游戏分类<br />
+                            点击「添加游戏」开始创建你的攻略库
+                        </div>
+                    `;
+                return;
+            }
+
+            data.forEach((cat, catIndex) => {
+                const guides = cat.guides || [];
+                const count = guides.length;
+                const accordion = document.createElement('div');
+                accordion.className = `accordion-category ${cat.active ? 'active' : ''}`;
+
+                let cardsHtml = '';
+                if (count === 0) {
+                    cardsHtml = `<div class="empty-hint" style="grid-column:1/-1; padding:16px 0;">暂无角色攻略，点击 + 添加</div>`;
+                } else {
+                    guides.forEach((guide, guideIndex) => {
+                        const avatar = guide.avatar || 'https://via.placeholder.com/300/1a1a2e/555?text=' +
+                            encodeURIComponent(guide.name.charAt(0) || '?');
+                        const tagHtml = guide.tag ? `<span class="role-tag">${guide.tag}</span>` : '';
+                        const desc = guide.content ? guide.content.substring(0, 30) + (guide.content.length > 30 ?
+                            '...' : '') : '';
+                        cardsHtml += `
+                                <div class="guide-card" onclick="openDetailModal(${catIndex}, ${guideIndex})">
+                                    <img class="card-avatar" src="${avatar}" alt="${guide.name}" onerror="this.src='https://via.placeholder.com/300/1a1a2e/555?text=?'">
+                                    <div class="card-info">
+                                        <h4>${guide.name}</h4>
+                                        ${tagHtml}
+                                        ${desc ? `<div class="role-desc">${desc}</div>` : ''}
+                                    </div>
+                                    <div class="card-actions">
+                                        <button class="btn-edit-card" onclick="event.stopPropagation(); openGuideModal(${catIndex}, ${guideIndex})" title="编辑">✏️</button>
+                                        <button class="btn-del-card" onclick="event.stopPropagation(); deleteGuide(${catIndex}, ${guideIndex})" title="删除">🗑️</button>
+                                    </div>
+                                </div>
+                            `;
+                    });
+                }
+
+                accordion.innerHTML = `
+                        <div class="accordion-header">
+                            <div class="category-title">
+                                <span class="game-icon">${cat.icon || '🎮'}</span>
+                                ${cat.name}
+                                <span class="count-badge">(${count} 个角色)</span>
+                            </div>
+                            <div class="header-actions">
+                                <button class="action-btn btn-add" onclick="openGuideModal(${catIndex}, -1)" title="添加角色攻略">+</button>
+                                <button class="action-btn btn-manage" onclick="openManageModal(${catIndex})" title="管理游戏">⚙️</button>
+                                <button class="action-btn btn-arrow" onclick="toggleCategory(${catIndex})">▼</button>
+                            </div>
+                        </div>
+                        <div class="accordion-body">
+                            <div class="guide-grid" data-catindex="${catIndex}">
+                                ${cardsHtml}
+                            </div>
+                        </div>
+                    `;
+                container.appendChild(accordion);
+            });
+        }
+
+        function toggleCategory(index) {
+            const data = getData();
+            data[index].active = !data[index].active;
+            saveData(data);
+        }
+
+        // ================================================================
+        // 4. 添加游戏分类
+        // ================================================================
+        function addCategory() {
+            const name = prompt('请输入游戏名称：');
+            if (name && name.trim()) {
+                const icon = prompt('请输入游戏图标 (emoji，如 🎮 ⚔️ 🚀)：') || '🎮';
+                const data = getData();
+                data.push({ name: name.trim(), icon: icon.trim() || '🎮', active: true, guides: [] });
+                saveData(data);
+            }
+        }
+
+        // ================================================================
+        // 5. 查看详情（含链接跳转）
+        // ================================================================
+        function openDetailModal(catIndex, guideIndex) {
+            const data = getData();
+            const cat = data[catIndex];
+            if (!cat || !cat.guides) return;
+            const guide = cat.guides[guideIndex];
+            if (!guide) return;
+
+            document.getElementById('detailAvatar').src = guide.avatar ||
+                'https://via.placeholder.com/60/1a1a2e/555?text=?';
+            document.getElementById('detailName').textContent = guide.name;
+            document.getElementById('detailGame').textContent = '🎮 ' + cat.name;
+            document.getElementById('detailTag').textContent = '🏷️ ' + (guide.tag || '未分类');
+            document.getElementById('detailContent').textContent = guide.content || '暂无详细攻略内容';
+
+            // ===== 处理跳转链接 =====
+            const linkBtn = document.getElementById('detailLinkBtn');
+            if (guide.link && guide.link.trim()) {
+                linkBtn.href = guide.link.trim();
+                linkBtn.style.display = 'inline-flex';
+            } else {
+                linkBtn.style.display = 'none';
+            }
+
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+        // ================================================================
+        // 6. 添加/编辑攻略（含 link 字段）
+        // ================================================================
+        let currentCatIndex = null,
+            currentGuideIndex = null;
+
+        function openGuideModal(catIndex, guideIndex) {
+            currentCatIndex = catIndex;
+            currentGuideIndex = guideIndex;
+            const modal = document.getElementById('guideModal');
+            const title = document.getElementById('guideModalTitle');
+            const nameInput = document.getElementById('guideName');
+            const avatarInput = document.getElementById('guideAvatar');
+            const tagInput = document.getElementById('guideTag');
+            const linkInput = document.getElementById('guideLink');
+            const contentInput = document.getElementById('guideContent');
+            const categorySelect = document.getElementById('guideCategory');
+
+            categorySelect.innerHTML = '';
+            const data = getData();
+            data.forEach((cat, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = (cat.icon || '🎮') + ' ' + cat.name;
+                categorySelect.appendChild(opt);
+            });
+
+            if (guideIndex === -1) {
+                title.textContent = '➕ 添加角色攻略';
+                nameInput.value = '';
+                avatarInput.value = '';
+                tagInput.value = '';
+                linkInput.value = '';
+                contentInput.value = '';
+                categorySelect.value = catIndex;
+            } else {
+                title.textContent = '✏️ 编辑角色攻略';
+                const guide = data[catIndex].guides[guideIndex];
+                nameInput.value = guide.name || '';
+                avatarInput.value = guide.avatar || '';
+                tagInput.value = guide.tag || '';
+                linkInput.value = guide.link || '';
+                contentInput.value = guide.content || '';
+                categorySelect.value = catIndex;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeGuideModal() { document.getElementById('guideModal').style.display = 'none'; }
+
+        function saveGuide() {
+            const name = document.getElementById('guideName').value.trim();
+            const avatar = document.getElementById('guideAvatar').value.trim();
+            const tag = document.getElementById('guideTag').value.trim();
+            const link = document.getElementById('guideLink').value.trim();
+            const content = document.getElementById('guideContent').value.trim();
+            const targetCatIndex = parseInt(document.getElementById('guideCategory').value);
+
+            if (!name) { alert('请输入角色名称'); return; }
+
+            const data = getData();
+            const newGuide = { name, avatar, tag, link, content , createdAt: Date.now()};
+
+            if (currentGuideIndex === -1) {
+                if (!data[targetCatIndex].guides) data[targetCatIndex].guides = [];
+                data[targetCatIndex].guides.push(newGuide);
+            } else {
+                if (targetCatIndex !== currentCatIndex) {
+                    const moved = data[currentCatIndex].guides.splice(currentGuideIndex, 1);
+                    if (moved.length) {
+                        if (!data[targetCatIndex].guides) data[targetCatIndex].guides = [];
+                        data[targetCatIndex].guides.push(moved[0]);
+                    }
+                } else {
+                    data[currentCatIndex].guides[currentGuideIndex] = newGuide;
+                }
+            }
+            saveData(data);
+            closeGuideModal();
+        }
+
+        // ================================================================
+        // 7. 删除攻略
+        // ================================================================
+        function deleteGuide(catIndex, guideIndex) {
+            if (confirm('确定要删除这个角色攻略吗？')) {
+                const data = getData();
+                if (data[catIndex] && data[catIndex].guides) {
+                    data[catIndex].guides.splice(guideIndex, 1);
+                    saveData(data);
+                }
+            }
+        }
+
+        // ================================================================
+        // 8. 管理游戏分类
+        // ================================================================
+        function openManageModal(catIndex) {
+            currentCatIndex = catIndex;
+            const data = getData();
+            const modal = document.getElementById('manageModal');
+            const title = document.getElementById('manageModalTitle');
+            const list = document.getElementById('manageList');
+
+            title.textContent = `📂 管理游戏: ${data[catIndex].name}`;
+            list.innerHTML = '';
+
+            const guides = data[catIndex].guides || [];
+            if (guides.length === 0) {
+                list.innerHTML = '<li style="text-align:center; color:#888; padding:20px; font-size:14px;">该游戏下暂无角色攻略</li>';
+            } else {
+                guides.forEach((guide, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'manage-item';
+                    const imgSrc = guide.avatar ||
+                        'https://via.placeholder.com/32/1a1a2e/555?text=?';
+                    li.innerHTML = `
+                            <div class="manage-item-info">
+                                <img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/32/1a1a2e/555?text=?'">
+                                <span>${guide.name}</span>
+                                ${guide.tag ? `<span style="font-size:12px;color:rgba(255,255,255,0.4);">${guide.tag}</span>` : ''}
+                                ${guide.link ? `<span style="font-size:11px;color:#48bb78;margin-left:4px;">🔗</span>` : ''}
+                            </div>
+                            <div class="manage-item-actions">
+                                <button class="btn-edit" onclick="closeManageModal(); openGuideModal(${catIndex}, ${idx})" title="编辑">✏️</button>
+                                <button class="btn-del" onclick="deleteGuide(${catIndex}, ${idx}); openManageModal(${catIndex})" title="删除">🗑️</button>
+                            </div>
+                        `;
+                    list.appendChild(li);
+                });
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeManageModal() { document.getElementById('manageModal').style.display = 'none'; }
+
+        // ================================================================
+        // 9. 导出 / 导入
+        // ================================================================
+        function exportData() {
+            const data = getData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'myGuidesData.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        if (confirm('将覆盖当前所有攻略数据，确认？')) {
+                            saveData(imported);
+                            alert('✅ 导入成功！');
+                        }
+                    } else {
+                        alert('❌ 数据格式不正确');
+                    }
+                } catch (err) {
+                    alert('❌ 解析 JSON 失败');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ================================================================
+        // 10. 点击外部关闭
+        // ================================================================
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('detailModal')) closeDetailModal();
+            if (event.target == document.getElementById('guideModal')) closeGuideModal();
+            if (event.target == document.getElementById('manageModal')) closeManageModal();
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('detailModal').style.display === 'flex') closeDetailModal();
+                if (document.getElementById('guideModal').style.display === 'flex') closeGuideModal();
+                if (document.getElementById('manageModal').style.display === 'flex') closeManageModal();
+            }
+        });
+
+        // ================================================================
+        // 11. 初始化
+        // ================================================================
+        renderCarousel();
+        renderCategories();
+        console.log('🎮 攻略中心已加载 — 支持跳转完整攻略链接');
+        console.log('💡 点击角色卡片查看详情，有链接会显示「查看完整攻略 →」按钮');
+    </script>
+
+    <!-- 引入导航栏 -->
+    <script src="nav.js"></script>
+</body>
+</html>
