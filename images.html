@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片画廊 - 我的个人导航站</title>
+    <style>
+        /* ========== 全局重置 & 背景 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #fff;
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        /* ========== 页面内容容器 ========== */
+        .page-content {
+            display: block;
+            padding: 80px 0 20px;
+            max-width: 60%;
+            margin: auto;
+        }
+
+        /* ========== 动画 ========== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        /* ============================================================
+                   1. 轮播图样式
+                   ============================================================ */
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            background: #1a1a2e;
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .carousel-slide {
+            flex: 0 0 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .carousel-slide .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.1) 60%, rgba(0, 0, 0, 0.3) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px 40px;
+        }
+
+        .slide-overlay h2 {
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .slide-overlay p {
+            font-size: 15px;
+            opacity: 0.9;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            max-width: 60%;
+            line-height: 1.5;
+        }
+
+        /* 轮播控制按钮 */
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            user-select: none;
+        }
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-50%) scale(1.08);
+        }
+        .carousel-btn.prev {
+            left: 16px;
+        }
+        .carousel-btn.next {
+            right: 16px;
+        }
+
+        /* 指示点 */
+        .carousel-dots {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .carousel-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .carousel-dots span.active {
+            background: #fff;
+            transform: scale(1.25);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+        }
+        .carousel-dots span:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ============================================================
+                   2. 分类面板（手风琴）
+                   ============================================================ */
+        .accordion-category {
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .accordion-category:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .accordion-header:hover .category-title {
+            color: #aac8ff;
+        }
+        .category-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #8bb8ff;
+            transition: color 0.3s;
+        }
+        .category-title .count-badge {
+            font-weight: 400;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: 6px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: transform 0.2s, opacity 0.2s;
+            color: white;
+            opacity: 0.7;
+        }
+        .action-btn:hover {
+            transform: scale(1.12);
+            opacity: 1;
+        }
+        .btn-add {
+            background: #48bb78;
+        }
+        .btn-manage {
+            background: #ecc94b;
+            color: #333;
+        }
+        .btn-arrow {
+            background: transparent;
+            color: #8bb8ff;
+            transform: none !important;
+            opacity: 0.6;
+        }
+        .accordion-category.active .btn-arrow {
+            transform: rotate(180deg) !important;
+            opacity: 1;
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.45s ease;
+        }
+        .accordion-category.active .accordion-body {
+            max-height: 2000px;
+        }
+
+        /* ============================================================
+                   3. 图片画廊网格（紧凑正方形）
+                   ============================================================ */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
+            padding: 8px 16px 16px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: zoom-in;
+            aspect-ratio: 1 / 1;
+            background: #1a1a2e;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.25s ease;
+        }
+        .gallery-item:hover {
+            border-color: rgba(74, 144, 226, 0.5);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        /* 放大镜悬停时图片本身轻微放大（辅助视觉） */
+        .gallery-item.magnifying img {
+            transform: scale(1.04);
+        }
+
+        /* ============================================================
+                   4. 放大镜组件（浮动圆形）
+                   ============================================================ */
+        .magnifier-glass {
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.1);
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+            background-color: #1a1a2e;
+            background-size: 280%;
+            /* 放大倍数 */
+            transition: none;
+            will-change: transform, left, top, background-position;
+        }
+        /* 放大镜内部高光装饰 */
+        .magnifier-glass::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            width: 40px;
+            height: 28px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+                   5. 工具栏
+                   ============================================================ */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 5px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .toolbar button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        #importFileInput {
+            display: none;
+        }
+
+        /* ============================================================
+                   6. 弹窗（通用）
+                   ============================================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-box {
+            background: #1e1e2f;
+            padding: 28px 32px;
+            border-radius: 14px;
+            width: 420px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+        .modal-box h3 {
+            margin-bottom: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #c8d8ff;
+        }
+        .modal-box input,
+        .modal-box select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2a2a3e;
+            color: #fff;
+            outline: none;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .modal-box input:focus,
+        .modal-box select:focus {
+            border-color: #4a90e2;
+        }
+        .modal-box label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .btn-cancel {
+            background: #3a3a4e;
+            color: #ccc;
+        }
+        .btn-cancel:hover {
+            background: #4a4a5e;
+        }
+        .btn-save {
+            background: #4a90e2;
+            color: #fff;
+        }
+        .btn-save:hover {
+            background: #5a9ef0;
+            transform: scale(1.02);
+        }
+
+        /* ============================================================
+                   7. 管理列表
+                   ============================================================ */
+        .manage-list {
+            list-style: none;
+        }
+        .manage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .manage-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .manage-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .manage-item-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: #222;
+            flex-shrink: 0;
+        }
+        .manage-item-info span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+        }
+        .manage-item-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            margin-left: 8px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .manage-item-actions button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-edit {
+            color: #ecc94b;
+        }
+        .btn-del {
+            color: #e53e3e;
+        }
+
+        /* ============================================================
+                   8. 图片预览（弹窗内）
+                   ============================================================ */
+        #imagePreview {
+            text-align: center;
+            margin-bottom: 14px;
+            display: none;
+        }
+        #previewImg {
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        /* ============================================================
+                   9. Lightbox（图片放大查看，保留作为补充）
+                   ============================================================ */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 300;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            backdrop-filter: blur(6px);
+        }
+        .lightbox-overlay img {
+            max-width: 92%;
+            max-height: 92%;
+            border-radius: 10px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+            animation: fadeInLightbox 0.3s ease;
+        }
+        @keyframes fadeInLightbox {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ============================================================
+                   10. 响应式适配
+                   ============================================================ */
+        @media (max-width: 1024px) {
+            .page-content {
+                max-width: 80%;
+            }
+            .carousel-wrapper {
+                height: 280px;
+            }
+            .slide-overlay h2 {
+                font-size: 22px;
+            }
+            .slide-overlay p {
+                font-size: 13px;
+                max-width: 80%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-content {
+                max-width: 94%;
+                padding: 70px 0 16px;
+            }
+            .carousel-wrapper {
+                height: 220px;
+                border-radius: 12px;
+            }
+            .carousel-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+            }
+            .carousel-btn.prev {
+                left: 8px;
+            }
+            .carousel-btn.next {
+                right: 8px;
+            }
+            .slide-overlay {
+                padding: 18px 22px;
+            }
+            .slide-overlay h2 {
+                font-size: 18px;
+            }
+            .slide-overlay p {
+                font-size: 12px;
+                max-width: 90%;
+            }
+            .carousel-dots span {
+                width: 8px;
+                height: 8px;
+            }
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 6px;
+                padding: 6px 10px 12px;
+            }
+            .magnifier-glass {
+                width: 110px;
+                height: 110px;
+                border-width: 2px;
+            }
+            .modal-box {
+                width: 94%;
+                padding: 20px 18px;
+                margin: 10px;
+            }
+            .toolbar button {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .accordion-header {
+                padding: 10px 14px;
+            }
+            .category-title {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel-wrapper {
+                height: 170px;
+            }
+            .slide-overlay h2 {
+                font-size: 15px;
+            }
+            .slide-overlay p {
+                font-size: 11px;
+                max-width: 100%;
+            }
+            .carousel-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+            }
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 5px;
+                padding: 4px 6px 10px;
+            }
+            .magnifier-glass {
+                width: 90px;
+                height: 90px;
+            }
+            .modal-box {
+                padding: 16px 14px;
+            }
+            .modal-box h3 {
+                font-size: 16px;
+            }
+            .modal-box input,
+            .modal-box select {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+        }
+
+        /* ============================================================
+                   11. 空状态提示
+                   ============================================================ */
+        .empty-hint {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 24px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航栏占位 ===== -->
+    <div id="nav-placeholder"></div>
+
+    <!-- ===== 图片页内容 ===== -->
+    <div id="images" class="page-content">
+        <div class="animate-fade-in delay-1">
+
+            <!-- ====== 1. 轮播图 ====== -->
+            <div class="carousel-wrapper" id="carouselWrapper">
+                <div class="carousel-track" id="carouselTrack">
+                    <!-- 由 JS 动态渲染 -->
+                </div>
+
+                <!-- 控制按钮 -->
+                <button class="carousel-btn prev" id="carouselPrev" aria-label="上一张">‹</button>
+                <button class="carousel-btn next" id="carouselNext" aria-label="下一张">›</button>
+
+                <!-- 指示点 -->
+                <div class="carousel-dots" id="carouselDots"></div>
+            </div>
+
+            <!-- ====== 2. 标题 & 工具栏 ====== -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h2 style="font-size:20px; font-weight:600; letter-spacing:0.5px;">🖼️ 我的图片画廊</h2>
+                <div class="toolbar">
+                    <button onclick="addCategory()">+ 添加分类</button>
+                    <button onclick="exportData()">📤 导出</button>
+                    <button onclick="document.getElementById('importFileInput').click()">📥 导入</button>
+                    <input type="file" id="importFileInput" accept=".json" onchange="importData(event)" />
+                </div>
+            </div>
+
+            <!-- ====== 3. 分类折叠面板 ====== -->
+            <div id="linkContainer"></div>
+        </div>
+    </div>
+
+    <!-- ====== 放大镜（浮动元素） ====== -->
+    <div class="magnifier-glass" id="magnifierGlass"></div>
+
+    <!-- ====== Lightbox（点击图片放大查看） ====== -->
+    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" alt="大图" />
+    </div>
+
+    <!-- ====== 弹窗：添加/编辑图片 ====== -->
+    <div class="modal-overlay" id="urlModal">
+        <div class="modal-box">
+            <h3 id="modalTitle">添加新图片</h3>
+            <input type="text" id="modalName" placeholder="图片名称（便于管理）" />
+            <input type="text" id="modalUrl" placeholder="网络图片链接 (可选)" />
+
+            <label>上传本地图片 (推荐)</label>
+            <input type="file" id="modalImage" accept="image/*" style="padding:8px; background:#2a2a3e;" />
+
+            <div id="imagePreview">
+                <img id="previewImg" src="" alt="预览" />
+            </div>
+
+            <select id="modalCategory"></select>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeUrlModal()">取消</button>
+                <button class="btn-save" onclick="saveUrl()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 弹窗：管理分类 ====== -->
+    <div class="modal-overlay" id="manageModal">
+        <div class="modal-box">
+            <h3 id="manageModalTitle">管理分类</h3>
+            <ul id="manageList" class="manage-list"></ul>
+            <div class="modal-actions">
+                <button class="btn-save" onclick="closeManageModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- JavaScript -->
+    <!-- ================================================================ -->
+    <script>
+        // ================================================================
+        // 1. 轮播图数据 & 逻辑
+        // ================================================================
+        const carouselData = [{
+            img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+            title: '🏔️ 山间晨雾',
+            desc: '清晨的山脉被薄雾笼罩，宛如人间仙境'
+        }, {
+            img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80',
+            title: '🌲 森林光影',
+            desc: '阳光透过树叶洒落，形成斑驳的光影画卷'
+        }, {
+            img: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=1200&q=80',
+            title: '🌌 星空银河',
+            desc: '浩瀚星空下，璀璨银河横跨天际'
+        }, {
+            img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+            title: '🌅 海洋日落',
+            desc: '夕阳余晖洒落海面，波光粼粼如梦似幻'
+        }, {
+            img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80',
+            title: '🌃 城市夜景',
+            desc: '万家灯火点亮夜空，城市在星光下苏醒'
+        }];
+
+        let currentSlide = 0;
+        let slideInterval = null;
+        const slideCount = carouselData.length;
+
+        function renderCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const dots = document.getElementById('carouselDots');
+
+            // 渲染 slides
+            track.innerHTML = carouselData.map((item, idx) => `
+                    <div class="carousel-slide" data-index="${idx}">
+                        <img src="${item.img}" alt="${item.title}" loading="lazy" />
+                        <div class="slide-overlay">
+                            <h2>${item.title}</h2>
+                            <p>${item.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+            // 渲染指示点
+            dots.innerHTML = carouselData.map((_, idx) =>
+                `<span class="${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`
+            ).join('');
+
+            // 绑定指示点点击
+            dots.querySelectorAll('span').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    goToSlide(parseInt(this.dataset.index));
+                });
+            });
+
+            // 绑定按钮
+            document.getElementById('carouselPrev').addEventListener('click', () => goToSlide(currentSlide - 1));
+            document.getElementById('carouselNext').addEventListener('click', () => goToSlide(currentSlide + 1));
+
+            // 鼠标悬停暂停/恢复
+            const wrapper = document.getElementById('carouselWrapper');
+            wrapper.addEventListener('mouseenter', pauseAutoPlay);
+            wrapper.addEventListener('mouseleave', startAutoPlay);
+
+            // 初始定位
+            goToSlide(0, false);
+            startAutoPlay();
+        }
+
+        function goToSlide(index, auto = true) {
+            if (index < 0) index = slideCount - 1;
+            if (index >= slideCount) index = 0;
+            currentSlide = index;
+
+            const track = document.getElementById('carouselTrack');
+            track.style.transform = `translateX(-${index * 100}%)`;
+
+            // 更新指示点
+            document.querySelectorAll('#carouselDots span').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            if (auto) {
+                resetAutoPlay();
+            }
+        }
+
+        function startAutoPlay() {
+            if (slideInterval) return;
+            slideInterval = setInterval(() => goToSlide(currentSlide + 1), 4200);
+        }
+
+        function pauseAutoPlay() {
+            if (slideInterval) {
+                clearInterval(slideInterval);
+                slideInterval = null;
+            }
+        }
+
+        function resetAutoPlay() {
+            pauseAutoPlay();
+            startAutoPlay();
+        }
+
+        // ================================================================
+        // 2. 数据管理（图片分类）
+        // ================================================================
+        const defaultData = [
+            { name: "风景壁纸", active: true, links: [
+                    { name: "山脉", url: "", localImg: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" },
+                    { name: "森林", url: "", localImg: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&q=80" },
+                    { name: "湖泊", url: "", localImg: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80" },
+                    { name: "瀑布", url: "", localImg: "https://images.unsplash.com/photo-1433086966358-54859d0ed716?auto=format&fit=crop&w=400&q=80" }
+                ] },
+            { name: "动漫插画", active: true, links: [
+                    { name: "星空", url: "", localImg: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=400&q=80" },
+                    { name: "梦幻", url: "", localImg: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=400&q=80" }
+                ] },
+            { name: "城市建筑", active: false, links: [
+                    { name: "夜景", url: "", localImg: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=400&q=80" },
+                    { name: "桥梁", url: "", localImg: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=400&q=80" }
+                ] }
+        ];
+
+        function getData() {
+            return JSON.parse(localStorage.getItem('myImageLinks')) || defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('myImageLinks', JSON.stringify(data));
+            renderCategories();
+        }
+
+        function getFavicon(url) {
+            try { return new URL(url).origin + '/favicon.ico'; } catch (e) { return ''; }
+        }
+
+        // ================================================================
+        // 3. 渲染分类 + 绑定放大镜
+        // ================================================================
+        function renderCategories() {
+            const data = getData();
+            const container = document.getElementById('linkContainer');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="empty-hint">还没有分类，点击 "添加分类" 开始创建 ✨</div>';
+                return;
+            }
+
+            data.forEach((cat, catIndex) => {
+                const accordion = document.createElement('div');
+                accordion.className = `accordion-category ${cat.active ? 'active' : ''}`;
+
+                const linkCount = cat.links.length;
+                accordion.innerHTML = `
+                        <div class="accordion-header">
+                            <div class="category-title">
+                                ${cat.name}
+                                <span class="count-badge">(${linkCount})</span>
+                            </div>
+                            <div class="header-actions">
+                                <button class="action-btn btn-add" onclick="openUrlModal(${catIndex}, -1)" title="添加图片">+</button>
+                                <button class="action-btn btn-manage" onclick="openManageModal(${catIndex})" title="管理分类">⚙️</button>
+                                <button class="action-btn btn-arrow" onclick="toggleCategory(${catIndex})">▼</button>
+                            </div>
+                        </div>
+                        <div class="accordion-body">
+                            <div class="gallery-grid" data-catindex="${catIndex}">
+                                ${cat.links.map((link, linkIndex) => {
+                                    const imgSrc = link.localImg || link.icon || getFavicon(link.url) || 'https://via.placeholder.com/300/1a1a2e/555?text=No+Image';
+                                    return `
+                                        <div class="gallery-item" 
+                                             data-src="${imgSrc.replace(/"/g, '&quot;')}"
+                                             data-name="${link.name.replace(/"/g, '&quot;')}"
+                                             data-cat="${catIndex}"
+                                             data-idx="${linkIndex}"
+                                             onclick="openLightbox('${imgSrc.replace(/'/g, "\\'")}')">
+                                            <img src="${imgSrc}" alt="${link.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300/1a1a2e/555?text=Error'">
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                container.appendChild(accordion);
+            });
+
+            // 绑定放大镜事件（使用事件委托）
+            bindMagnifierEvents();
+        }
+
+        // ================================================================
+        // 4. 放大镜功能
+        // ================================================================
+        let magnifierActive = false;
+        const glass = document.getElementById('magnifierGlass');
+
+        function bindMagnifierEvents() {
+            // 使用事件委托监听 .gallery-item 的鼠标事件
+            const container = document.getElementById('linkContainer');
+
+            // 移除旧监听（避免重复绑定），使用新监听
+            container.removeEventListener('mouseenter', onItemMouseEnter, true);
+            container.removeEventListener('mouseleave', onItemMouseLeave, true);
+            container.removeEventListener('mousemove', onItemMouseMove, true);
+
+            container.addEventListener('mouseenter', onItemMouseEnter, true);
+            container.addEventListener('mouseleave', onItemMouseLeave, true);
+            container.addEventListener('mousemove', onItemMouseMove, true);
+        }
+
+        function onItemMouseEnter(e) {
+            const item = e.target.closest('.gallery-item');
+            if (!item) return;
+            const img = item.querySelector('img');
+            if (!img) return;
+
+            const src = img.src;
+            if (!src || src.includes('placeholder')) return;
+
+            // 激活放大镜
+            magnifierActive = true;
+            glass.style.display = 'block';
+            glass.style.backgroundImage = `url(${src})`;
+
+            // 添加高亮类
+            item.classList.add('magnifying');
+
+            // 记录当前图片元素
+            glass.dataset.targetImg = src;
+        }
+
+        function onItemMouseLeave(e) {
+            const item = e.target.closest('.gallery-item');
+            if (item) {
+                item.classList.remove('magnifying');
+            }
+            magnifierActive = false;
+            glass.style.display = 'none';
+        }
+
+        function onItemMouseMove(e) {
+            if (!magnifierActive) return;
+
+            const item = e.target.closest('.gallery-item');
+            if (!item) return;
+
+            const img = item.querySelector('img');
+            if (!img) return;
+
+            const rect = item.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // 计算在图片中的百分比位置 (0~1)
+            const percentX = Math.min(Math.max(x / rect.width, 0), 1);
+            const percentY = Math.min(Math.max(y / rect.height, 0), 1);
+
+            // 放大镜大小
+            const glassSize = glass.offsetWidth || 150;
+            const halfGlass = glassSize / 2;
+
+            // 放大镜位置（在鼠标右下方偏移，避免遮挡视线）
+            let left = e.clientX + 18;
+            let top = e.clientY + 18;
+
+            // 边界检测，防止放大镜超出视口
+            const viewW = window.innerWidth;
+            const viewH = window.innerHeight;
+            if (left + glassSize > viewW) left = e.clientX - glassSize - 18;
+            if (top + glassSize > viewH) top = e.clientY - glassSize - 18;
+            if (left < 0) left = 8;
+            if (top < 0) top = 8;
+
+            glass.style.left = left + 'px';
+            glass.style.top = top + 'px';
+
+            // 设置背景位置：放大镜显示鼠标位置的局部放大
+            // background-size: 280% 意味着显示的区域是原始图片的 1/2.8 ≈ 35.7%
+            // 所以背景位置需要根据百分比偏移
+            const bgX = percentX * 100;
+            const bgY = percentY * 100;
+            glass.style.backgroundPosition = `${bgX}% ${bgY}%`;
+        }
+
+        // ================================================================
+        // 5. 切换分类折叠
+        // ================================================================
+        function toggleCategory(index) {
+            const data = getData();
+            data[index].active = !data[index].active;
+            saveData(data);
+        }
+
+        // ================================================================
+        // 6. 添加分类
+        // ================================================================
+        function addCategory() {
+            const name = prompt('请输入新分类名称：');
+            if (name && name.trim()) {
+                const data = getData();
+                data.push({ name: name.trim(), active: true, links: [] });
+                saveData(data);
+            }
+        }
+
+        // ================================================================
+        // 7. Lightbox
+        // ================================================================
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // ================================================================
+        // 8. 添加/编辑图片 弹窗
+        // ================================================================
+        let currentCatIndex = null;
+        let currentLinkIndex = null;
+
+        function openUrlModal(catIndex, linkIndex) {
+            currentCatIndex = catIndex;
+            currentLinkIndex = linkIndex;
+
+            const modal = document.getElementById('urlModal');
+            const title = document.getElementById('modalTitle');
+            const nameInput = document.getElementById('modalName');
+            const urlInput = document.getElementById('modalUrl');
+            const imageInput = document.getElementById('modalImage');
+            const categorySelect = document.getElementById('modalCategory');
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            // 重置预览
+            previewDiv.style.display = 'none';
+            previewImg.src = '';
+            imageInput.value = '';
+
+            // 填充分类下拉
+            categorySelect.innerHTML = '';
+            const data = getData();
+            data.forEach((cat, i) => {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = cat.name;
+                categorySelect.appendChild(option);
+            });
+
+            if (linkIndex === -1) {
+                title.textContent = "添加新图片";
+                nameInput.value = "";
+                urlInput.value = "";
+                categorySelect.value = catIndex;
+            } else {
+                title.textContent = "编辑图片";
+                const link = data[catIndex].links[linkIndex];
+                nameInput.value = link.name;
+                urlInput.value = link.url || "";
+                categorySelect.value = catIndex;
+                if (link.localImg) {
+                    previewImg.src = link.localImg;
+                    previewDiv.style.display = 'block';
+                }
+            }
+
+            // 绑定文件选择预览
+            imageInput.onchange = function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewDiv.style.display = 'block';
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    previewDiv.style.display = 'none';
+                }
+            };
+
+            modal.style.display = 'flex';
+        }
+
+        function closeUrlModal() {
+            document.getElementById('urlModal').style.display = 'none';
+        }
+
+        function saveUrl() {
+            const name = document.getElementById('modalName').value.trim();
+            const url = document.getElementById('modalUrl').value.trim();
+            const targetCatIndex = parseInt(document.getElementById('modalCategory').value);
+            const fileInput = document.getElementById('modalImage');
+
+            if (!name) { alert('图片名称不能为空'); return; }
+
+            const data = getData();
+            const finalUrl = url.startsWith('http') ? url : (url ? 'https://' + url : "");
+
+            const processAndSave = (localImgBase64 = "") => {
+                const newLink = {
+                    name,
+                    url: finalUrl,
+                    icon: getFavicon(finalUrl),
+                    localImg: localImgBase64,
+                    createdAt: Date.now() 
+                };
+
+                if (currentLinkIndex === -1) {
+                    data[targetCatIndex].links.push(newLink);
+                } else {
+                    if (!localImgBase64 && data[currentCatIndex].links[currentLinkIndex].localImg) {
+                        newLink.localImg = data[currentCatIndex].links[currentLinkIndex].localImg;
+                    }
+                    if (targetCatIndex !== currentCatIndex) {
+                        data[currentCatIndex].links.splice(currentLinkIndex, 1);
+                        data[targetCatIndex].links.push(newLink);
+                    } else {
+                        data[currentCatIndex].links[currentLinkIndex] = newLink;
+                    }
+                }
+                saveData(data);
+                closeUrlModal();
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { processAndSave(e.target.result); };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processAndSave("");
+            }
+        }
+
+        // ================================================================
+        // 9. 管理分类 弹窗
+        // ================================================================
+        function openManageModal(catIndex) {
+            currentCatIndex = catIndex;
+            const data = getData();
+            const modal = document.getElementById('manageModal');
+            const title = document.getElementById('manageModalTitle');
+            const list = document.getElementById('manageList');
+
+            title.textContent = `📂 管理分类: ${data[catIndex].name}`;
+            list.innerHTML = '';
+
+            if (data[catIndex].links.length === 0) {
+                list.innerHTML = '<li style="text-align:center; color:#888; padding:20px; font-size:14px;">该分类下暂无图片</li>';
+            } else {
+                data[catIndex].links.forEach((link, linkIndex) => {
+                    const li = document.createElement('li');
+                    li.className = 'manage-item';
+                    const imgSrc = link.localImg || link.icon || getFavicon(link.url) || 'https://via.placeholder.com/30/1a1a2e/555?text=?';
+                    li.innerHTML = `
+                            <div class="manage-item-info">
+                                <img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/30/1a1a2e/555?text=?'">
+                                <span>${link.name}</span>
+                            </div>
+                            <div class="manage-item-actions">
+                                <button class="btn-edit" onclick="closeManageModal(); openUrlModal(${catIndex}, ${linkIndex})" title="编辑">✏️</button>
+                                <button class="btn-del" onclick="deleteUrl(${catIndex}, ${linkIndex})" title="删除">🗑️</button>
+                            </div>
+                        `;
+                    list.appendChild(li);
+                });
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeManageModal() {
+            document.getElementById('manageModal').style.display = 'none';
+        }
+
+        function deleteUrl(catIndex, linkIndex) {
+            if (confirm('确定要删除这张图片吗？')) {
+                const data = getData();
+                data[catIndex].links.splice(linkIndex, 1);
+                saveData(data);
+                openManageModal(catIndex);
+            }
+        }
+
+        // ================================================================
+        // 10. 数据导出 / 导入
+        // ================================================================
+        function exportData() {
+            const data = getData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'myImageData.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        if (confirm('将覆盖当前所有图片数据，确认？')) {
+                            saveData(imported);
+                            alert('✅ 导入成功！');
+                        }
+                    } else {
+                        alert('❌ 数据格式不正确');
+                    }
+                } catch (err) {
+                    alert('❌ 解析 JSON 失败');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ================================================================
+        // 11. 点击弹窗外部关闭
+        // ================================================================
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('urlModal')) closeUrlModal();
+            if (event.target == document.getElementById('manageModal')) closeManageModal();
+        };
+
+        // ================================================================
+        // 12. 窗口尺寸变化时重新调整放大镜（防抖）
+        // ================================================================
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                // 如果放大镜显示中，隐藏它
+                if (glass.style.display === 'block') {
+                    glass.style.display = 'none';
+                    magnifierActive = false;
+                }
+            }, 200);
+        });
+
+        // ================================================================
+        // 13. 初始化
+        // ================================================================
+        renderCarousel();
+        renderCategories();
+
+        // 处理页面可见性变化时暂停/恢复轮播
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                pauseAutoPlay();
+            } else {
+                startAutoPlay();
+            }
+        });
+
+        console.log('🖼️ 图片画廊已加载 — 轮播图 + 放大镜功能已启用');
+        console.log('💡 提示：鼠标悬停图片可查看放大镜细节');
+    </script>
+
+    <!-- 引入导航栏 -->
+    <script src="nav.js"></script>
+</body>
+</html>
